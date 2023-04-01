@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:  
+  name: elasticsearch-backup
+spec:
+  template:
+    spec:
+      containers:
+      - name: elasticdump
+        image: elasticdump/elasticsearch-dump
+        command: ["sh", "-c"]
+        args:
+        - |
+          multielasticdump \
+           --direction=dump \
+           --match='^.*$' \
+           --input=http://elasticsearch.new.svc.cluster.local:9200/ \
+           --output= /data
+         env:
+          - name: NODE_TLS_REJECT_UNAUTHORIZED
+            value: "0"
+        volumeMounts:
+        - name: dump
+          mountPath: /data
+      volumes:
+      - name: dump
+        hostPath:
+          path: /data
+          type: DirectoryOrCreate
+      restartPolicy: Never
+  backoffLimit: 0
+
+
+
+

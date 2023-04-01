@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: elasticsearch-restore
+spec:
+  template:
+    spec:
+      containers:
+      - name: elasticdump
+        image: elasticdump/elasticsearch-dump
+        command: ["sh", "-c"]
+        args:
+        - |
+          multielasticdump \
+           --direction=dump \
+           --match='^.*$' \
+           --input=/data \
+           --output=http://elasticsearch.new.svc.cluster.local:9200/
+          env:
+          - name: NODE_TLS_REJECT_UNAUTHORIZED
+            value: "0"
+        volumeMounts:
+        - name: dump
+          mountPath: /data
+      volumes:
+      - name: dump
+        hostPath:
+          path: /data
+      restartPolicy: Never
+  backoffLimit: 0
+
+
